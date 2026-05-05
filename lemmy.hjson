@@ -1,0 +1,17 @@
+{
+  database: {
+    host: "postgres"
+    port: 5432
+    user: "lemmy"
+    password: "password"
+    database: "lemmy"
+  }
+  pictrs: {
+    url: "http://pictrs:8080/"
+    api_key: "changeme"
+  }
+  hostname: "localhost"
+  bind: "0.0.0.0"
+  port: 8536
+  tls_enabled: false
+}

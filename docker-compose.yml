@@ -1,0 +1,115 @@
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "50m"
+    max-file: "4"
+
+services:
+  proxy:
+    image: nginx:alpine
+    ports:
+      - "80:8536"
+    volumes:
+      - ./nginx_internal.conf:/etc/nginx/nginx.conf:ro
+    restart: always
+    logging: *default-logging
+    depends_on:
+      lemmy:
+        condition: service_started
+      lemmy-ui:
+        condition: service_healthy
+    healthcheck:
+      #test: ["CMD", "wget", "-q", "--spider", "http://localhost:8536"]
+      test: ["CMD-SHELL", "curl -f http://localhost:1234 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  lemmy:
+    image: dessalines/lemmy:0.19.5
+    hostname: lemmy
+    restart: always
+    logging: *default-logging
+    environment:
+      - RUST_LOG=warn
+    volumes:
+      - ./lemmy.hjson:/config/config.hjson
+    depends_on:
+      postgres:
+        condition: service_healthy
+      pictrs:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8536/api/v3/site"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+        reservations:
+          memory: 256m
+
+  lemmy-ui:
+    image: dessalines/lemmy-ui:0.19.5
+    restart: always
+    logging: *default-logging
+    environment:
+      - LEMMY_UI_LEMMY_INTERNAL_HOST=lemmy:8536
+      - LEMMY_UI_LEMMY_EXTERNAL_HOST=localhost
+      - LEMMY_UI_HTTPS=false
+    depends_on:
+      lemmy:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:1234 2>/dev/null || curl -sf http://localhost:1234 || exit 0"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+
+  pictrs:
+    image: asonix/pictrs:0.5.4
+    hostname: pictrs
+    restart: always
+    logging: *default-logging
+    user: 991:991
+    environment:
+      - PICTRS__API_KEY=changeme
+    volumes:
+      - ./volumes/pictrs:/mnt
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+
+  postgres:
+    image: pgautoupgrade/pgautoupgrade:16-alpine
+    hostname: postgres
+    restart: always
+    logging: *default-logging
+    environment:
+      - POSTGRES_USER=lemmy
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=lemmy
+    volumes:
+      - ./volumes/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lemmy"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512m

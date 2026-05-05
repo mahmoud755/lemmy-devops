@@ -1,0 +1,12 @@
+volumes/
+*.log
+.env
+crates/
+migrations/
+scripts/
+api_tests/
+docker/
+readmes/
+Cargo.*
+*.toml
+*.yml.bak
