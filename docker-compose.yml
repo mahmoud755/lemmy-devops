@@ -6,7 +6,7 @@ x-logging: &default-logging
 
 services:
   proxy:
-    image: ghcr.io/mahmoud/755/lemmy-devops:latest
+    image: ghcr.io/mahmoud755/lemmy-devops:latest
     ports:
       - "80:8536"
    #volumes:
