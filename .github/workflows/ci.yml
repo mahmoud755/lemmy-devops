@@ -13,7 +13,7 @@ jobs:
         
       - name: Check Required Files
         run: |
-          files=("docker-compose.yml" "nginx_internal.conf" "lemmy.hjson")
+          files=("docker-compose.yml" "nginx_internal.conf" "lemmy.hjson" "Dockerfile")
           for f in "${files[@]}"; do
             if [ ! -f $f ]; then
               echo "$f not exist!"
