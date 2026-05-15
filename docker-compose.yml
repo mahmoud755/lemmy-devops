@@ -9,8 +9,8 @@ services:
     image: ghcr.io/mahmoud/755/lemmy-devops:latest
     ports:
       - "80:8536"
-    volumes:
-      - ./nginx_internal.conf:/etc/nginx/nginx.conf:ro
+   #volumes:
+   #  - ./nginx_internal.conf:/etc/nginx/nginx.conf:ro
     restart: always
     logging: *default-logging
     depends_on:
