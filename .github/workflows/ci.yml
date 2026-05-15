@@ -3,6 +3,7 @@ name: Lemmy CI
 on:
   push:
     branches: [dev, main]
+  workflow_dispatch:
 
 jobs:
   validate:
