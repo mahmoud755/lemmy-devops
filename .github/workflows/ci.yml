@@ -1,0 +1,37 @@
+name: Lemmy CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-validate:
+    name: Validate Config Files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate docker-compose
+        run: |
+          docker compose config --quiet
+          echo "✅ docker-compose.yml is valid"
+
+      - name: Validate nginx Config
+        run: |
+          docker run --rm -v ${{ github.workspace }}/nginx_internal.conf:/etc/nginx/nginx.conf:ro nginx:alpine nginx -t
+          echo "✅ nginx config is valid"
+
+      - name: Check Required Files
+        run: |
+          files=("docker-compose.yml" "nginx_internal.conf" "lemmy.hjson")
+          for f in "${files[@]}"; do
+            if [ ! -f "$f" ]; then
+              echo "❌ Missing: $f"
+              exit 1
+            fi
+            echo "✅ Found: $f"
+          done
