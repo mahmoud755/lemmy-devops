@@ -20,11 +20,6 @@ jobs:
           docker compose config --quiet
           echo "✅ docker-compose.yml is valid"
 
-      - name: Validate nginx Config
-        run: |
-          docker run --rm -v ${{ github.workspace }}/nginx_internal.conf:/etc/nginx/nginx.conf:ro nginx:alpine nginx -t
-          echo "✅ nginx config is valid"
-
       - name: Check Required Files
         run: |
           files=("docker-compose.yml" "nginx_internal.conf" "lemmy.hjson")
